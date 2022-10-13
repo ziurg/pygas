@@ -1,0 +1,11 @@
+--trusted-host pypi.org
+--trusted-host pypi.python.org
+--trusted-host files.pythonhosted.org
+-r test.txt
+pip
+wheel
+flake8
+black
+Sphinx
+docopt
+pylint

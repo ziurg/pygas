@@ -1,0 +1,7 @@
+-r prod.txt
+tox
+coverage
+pytest
+pytest-cov
+pytest-bdd
+bandit
