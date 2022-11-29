@@ -1,22 +1,12 @@
 import abc
-from model.network import Network
-from model.node import Node
-from model.edge import Edge
+from app.domain.model.network import Network
 
 
 class NetworkRepository:
     @abc.abstractmethod
-    def get(networkName: str) -> Network:
-        pass
+    def load(self, model: Network, file: str) -> Network:
+        raise NotImplementedError
 
     @abc.abstractmethod
-    def save(model: Network) -> None:
-        pass
-
-    @abc.abstractmethod
-    def find_node(n_id: int) -> Node:
-        pass
-
-    @abc.abstractmethod
-    def find_edge(e_id: int) -> Edge:
-        pass
+    def write(self, model: Network, file: str) -> None:
+        raise NotImplementedError

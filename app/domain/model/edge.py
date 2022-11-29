@@ -1,21 +1,27 @@
-from dataclasses import dataclass, asdict
-from app.domain.model.pipe_material import Material
-from typing import Optional
+from dataclasses import dataclass, field
 
 
 @dataclass
 class Edge:
+    """Edge object
+
+    Note
+    ----
+    Other attributes used for network are :
+    length: float
+        pipe length in meters
+    diameter:float
+        pipe diameter in millimeters
+    material: Material
+        pipe's material
+    active: bool
+        can be inactive if pipe is disconneted
+    """
+
     id: int
     n1: int
     n2: int
-    length: Optional[float] = 0.0
-    diameter: Optional[float] = 0.0
-    material: Optional[Material] = None
-    active: Optional[bool] = True
+    params: field(default_factory=dict) = None
 
-    @classmethod
-    def from_dict(cls, d):
-        return cls(**d)
-
-    def to_dict(self) -> dict:
-        return asdict(self)
+    def __getattr__(self, attribute):
+        return self.params[attribute]

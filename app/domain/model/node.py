@@ -1,22 +1,32 @@
 # -*- coding: utf-8 -*-
-from typing import Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, field
 
 
 @dataclass
 class Node:
+    """Node object
+
+    Note
+    ----
+    Other attributes used for network are :
+    label: str
+        name of the node
+    x: float
+        x coordinate of the node
+    y: float
+        y coordinate of the node
+    z: float
+        z coordinate of the node
+    flow: float
+        flow consumption at the node
+    pressure: float
+        nodal pressure
+    active: bool
+        can be inactive in case of special nodes (customer or valve)
+    """
+
     id: int
-    label: Optional[str] = ""
-    x: Optional[float] = None
-    y: Optional[float] = None
-    z: Optional[float] = None
-    flow: Optional[float] = 0.0
-    pressure: Optional[float] = 0.0
-    active: Optional[bool] = True
+    params: field(default_factory=dict) = None
 
-    @classmethod
-    def from_dict(cls, d):
-        return cls(**d)
-
-    def to_dict(self) -> dict:
-        return asdict(self)
+    def __getattr__(self, attribute):
+        return self.params[attribute]

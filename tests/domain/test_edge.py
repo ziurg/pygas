@@ -1,5 +1,4 @@
 from app.domain.model.edge import Edge
-from app.domain.model.pipe_material import Material
 
 
 def test_edge_init_without_parameters():
@@ -16,24 +15,32 @@ def test_edge_from_dict():
         "n2": 4,
     }
 
-    edge = Edge.from_dict(init_dict)
+    edge = Edge(**init_dict)
 
     assert edge.id == 12
     assert edge.n1 == 5
     assert edge.n2 == 4
 
 
-def test_edge_to_dict():
+def test_edge_with_other_arguments():
     init_dict = {
         "id": 12,
         "n1": 5,
-        "n2": 4,
+        "n2": 4
+    }
+    other_arg = {
         "diameter": 50.6,
         "length": 12.3,
         "material": {},
         "active": True,
     }
 
-    edge = Edge.from_dict(init_dict)
+    edge = Edge(**init_dict, params=other_arg)
 
-    assert edge.to_dict() == init_dict
+    assert edge.id == 12
+    assert edge.n1 == 5
+    assert edge.n2 == 4
+    assert edge.diameter == 50.6
+    assert edge.length == 12.3
+    assert edge.material == {}
+    assert edge.active is True
