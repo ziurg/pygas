@@ -25,9 +25,7 @@ class Network:
 
     @singledispatchmethod
     def add(self, _: Union[Node, Edge]) -> None:
-        raise NotImplementedError(
-            "This object type can't be added to the model."
-            )
+        raise NotImplementedError("This object type can't be added to the model.")
 
     @add.register(Node)
     def _(self, n: Node) -> None:
@@ -39,9 +37,7 @@ class Network:
 
     @singledispatchmethod
     def __contains__(self, _) -> bool:
-        raise NotImplementedError(
-            "This object type is not valid for this method."
-            )
+        raise NotImplementedError("This object type is not valid for this method.")
 
     @__contains__.register(Node)
     def _(self, n: Node) -> bool:
