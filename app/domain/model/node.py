@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -25,8 +25,11 @@ class Node:
         can be inactive in case of special nodes (customer or valve)
     """
 
-    id: int
-    params: field(default_factory=dict) = None
+    def __init__(self, id, **kwargs):
+        self.id = id
+        self.params = {}
+        for k, v in kwargs.items():
+            self.params[k] = v
 
     def __getattr__(self, attribute):
         return self.params[attribute]

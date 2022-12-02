@@ -1,9 +1,9 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
-class Edge:
-    """Edge object
+class Link:
+    """Link object
 
     Note
     ----
@@ -18,10 +18,13 @@ class Edge:
         can be inactive if pipe is disconneted
     """
 
-    id: int
-    n1: int
-    n2: int
-    params: field(default_factory=dict) = None
+    def __init__(self, id: int, n1: int, n2: int, **kwargs):
+        self.id = id
+        self.n1 = n1
+        self.n2 = n2
+        self.params = {}
+        for k, v in kwargs.items():
+            self.params[k] = v
 
     def __getattr__(self, attribute):
         return self.params[attribute]

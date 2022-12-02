@@ -31,7 +31,7 @@ def main():
     default=False,
     help="Calcul des proportions de gaz bio.",
 )
-def run(config, input, bio):
+def solve(config, input, bio):
     # TODO : Mettre ici en forme les données pour le passer au solver
     #
     # Initialisation de la commande
@@ -40,7 +40,29 @@ def run(config, input, bio):
     s.run()
 
 
-main.add_command(run)
+@click.command()
+@click.option(
+    "--input",
+    "-i",
+    type=click.Path(),
+    required=True,
+    prompt="Spécifiez le fichier d'entrée.",
+    help="Fichier de définition du réseau",
+)
+@click.option(
+    "--result",
+    is_flag=True,
+    show_default=True,
+    default=False,
+    help="Affiche les résultats.",
+)
+def show(input, result):
+    raise NotImplementedError
+
+
+main.add_command(solve)
+main.add_command(show)
+
 
 if __name__ == "__main__":
     exit(main())

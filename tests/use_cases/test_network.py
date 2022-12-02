@@ -1,4 +1,4 @@
-from app.domain.model.network import Network, Node, Edge
+from app.domain.model.network import Network, Node, Link
 
 
 def test_add_node_to_network():
@@ -12,7 +12,7 @@ def test_add_node_to_network():
 
 def test_add_edge_to_network():
     net = Network()
-    net.add(Edge(id=25, n1=12, n2=35))
+    net.add(Link(id=25, n1=12, n2=35))
 
     assert 25 in net.edges
     assert net.edges[25].n1 == 12

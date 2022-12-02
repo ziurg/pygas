@@ -13,6 +13,7 @@ def test_carpathe_load():
     assert model.nodes[47].x == 359932.940000
     assert model.nodes[47].y == 304077.320000
     assert model.nodes[47].z == 0.000000
+    assert model.nodes[47].sector == "secteur BP"
     # assert model.nodes[47].is_tank() == True
     # assert model.nodes[47].pressure == 0.022000
     # assert model.nodes[49].x == 360571.770000

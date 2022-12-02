@@ -15,7 +15,7 @@ def test_node_init_with_params():
         "flow": 12.0e3,
         "pressure": 543.2,
     }
-    node = Node(id=12, params=params)
+    node = Node(id=12, **params)
     assert node.id == 12
     assert node.x == -0.09998975
     assert node.y == 51.75436525
