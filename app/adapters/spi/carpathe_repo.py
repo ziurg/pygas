@@ -60,35 +60,35 @@ class CarpatheRepository(NetworkRepository):
         Node
             Node instance filled with line informations
         """
-        l = line.strip().split("\t")
-        [id, x, y, z, cat, *_] = l
+        sline = line.strip().split("\t")
+        [id, x, y, z, cat, *_] = sline
         node = Node(int(id))
         node.x = float(x)
         node.y = float(y)
         node.z = float(z)
         node.params["type"] = cat
         if cat.upper() in ["T", "S", "U"]:  # Tank node
-            node.params["status"] = int(l[5])
-            node.params["name"] = l[6]
-            node.params["post_id"] = l[7]
-            node.params["downstream_pipe"] = int(l[8])
-            node.params["nb_lines"] = int(l[9])
-            node.params["active_line"] = int(l[10])
-            node.params["setpoint"] = float(l[12])
-            node.params["design_flow"] = float(l[14])
-            node.params["design_pressure"] = float(l[15])
+            node.params["status"] = int(sline[5])
+            node.params["name"] = sline[6]
+            node.params["post_id"] = sline[7]
+            node.params["downstream_pipe"] = int(sline[8])
+            node.params["nb_lines"] = int(sline[9])
+            node.params["active_line"] = int(sline[10])
+            node.params["setpoint"] = float(sline[12])
+            node.params["design_flow"] = float(sline[14])
+            node.params["design_pressure"] = float(sline[15])
         elif cat.upper() == "R":  # Valve
-            node.params["status"] = int(l[5])
-            node.params["name"] = l[6]
+            node.params["status"] = int(sline[5])
+            node.params["name"] = sline[6]
         elif cat.upper() == "G":  # Customer
-            node.params["status"] = int(l[5])
-            node.params["name"] = l[6]
-            node.params["customer_id"] = l[7]
-            node.params["unloading_sensitivity"] = int(l[8])
-            node.params["conso_risk_2%"] = float(l[9])
-            node.params["conso_risk_50%"] = float(l[10])
-            node.params["pressure"] = float(l[12])
-            node.params["usage"] = l[14]
+            node.params["status"] = int(sline[5])
+            node.params["name"] = sline[6]
+            node.params["customer_id"] = sline[7]
+            node.params["unloading_sensitivity"] = int(sline[8])
+            node.params["conso_risk_2%"] = float(sline[9])
+            node.params["conso_risk_50%"] = float(sline[10])
+            node.params["pressure"] = float(sline[12])
+            node.params["usage"] = sline[14]
         return node
 
     def _parse_link(self, line: str) -> Link:
@@ -161,6 +161,7 @@ class CarpatheRepository(NetworkRepository):
             #############################################
             # SECTOR BLOCKS READING
             #############################################
+            sector = ""
             for i, line in enumerate(lines):
                 try:
                     node = self._parse_node(line)
@@ -186,6 +187,7 @@ class CarpatheRepository(NetworkRepository):
             #############################################
             # SECTOR BLOCKS READING
             #############################################
+            sector = ""
             for i, line in enumerate(lines):
                 try:
                     link = self._parse_link(line)

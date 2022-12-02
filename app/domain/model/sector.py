@@ -1,4 +1,8 @@
 from .node import Node
+import numpy as np
+from scipy.sparse import coo_matrix, spdiags, hstack, vstack
+from scipy.sparse.linalg import spsolve
+import geojson
 
 
 class Secteur(object):
@@ -20,21 +24,6 @@ class Secteur(object):
         self.A21 = None
         # Paramètres de l'algorithme
         self._iterMax = 200
-
-    def __sub__(self, other):
-        linksSelf = [name for name in self.links.keys()]
-        linksOther = [name for name in other.links.keys()]
-        nodesSelf = [name for name in self.junctions.keys()]
-        nodesOther = [name for name in other.junctions.keys()]
-
-        if len(linksSelf) >= len(linksOther):
-            linksDiff = list(set(linksSelf) - set(linksOther))
-        else:
-            linksDiff = list(set(linksOther) - set(linksSelf))
-        if len(nodesSelf) >= len(nodesOther):
-            nodesDiff = list(set(nodesSelf) - set(nodesOther))
-        else:
-            nodesDiff = list(set(nodesOther) - set(nodesSelf))
 
     def checkTanks(self):
         """
@@ -63,13 +52,7 @@ class Secteur(object):
         consommation de tous les postes en aval.
         """
         for t in self.downTanks.values():
-            # if self.id == 2:
-            #     logger.debug("####### %s")
             if t.conso == 0:
-                logger.debug(
-                    "Le secteur %s ne peut pas encore être équilibré, la consommation du poste %s étant nulle."
-                    % (self.id, t.name)
-                )
                 return False
         return True
 
@@ -90,32 +73,32 @@ class Secteur(object):
         self.nbJunctions = len([i for i, j in self.junctions.items() if j.connected])
         # Répartition de la consommation le long des canalisations aux noeuds.
         links = (c for c in self.links.values() if c.conso != 0.0)
-        for l in links:
+        for link in links:
             # if l.j1.TYPE TODO : Vérifier l'intéret du test
-            l.j1.conso += l.conso / 2
-            l.j2.conso += l.conso / 2
+            link.j1.conso += link.conso / 2
+            link.j2.conso += link.conso / 2
 
     def connected_links(self, jname):
         for lName in self.junc2links[jname]:
             try:
                 yield self.links[lName]
-            except:
+            except KeyError:
                 pass
 
-    def isUpTank(self, j: Node) -> Boolean:
+    def isUpTank(self, j: Node) -> bool:
         if j.isTank and j.name in self.upTanks.keys():
             return True
         else:
             return False
 
-    def compute(self, params):
+    def _build_a11(self, params):
+        temp = float(params["temperature"])
+        a11 = np.array([link.A11(temp) for link in self.links.values()])
+        self.A11 = spdiags(a11, 0, a11.size, a11.size)
+
+    def _build_a21(self):
         nbJ = int(self.nbJunctions) - int(self.nbUpTanks)
         nbL = int(self.nbLinks)
-        # log(nbJ, nbL)
-        temp = float(params["temperature"])
-
-        a11 = np.array([l.A11(temp) for l in self.links.values()])
-        self.A11 = spdiags(a11, 0, a11.size, a11.size)
 
         # Matrice A21
         #  et récupération du débit aux jonctions pour la matrice dQ
@@ -126,15 +109,13 @@ class Secteur(object):
         val = []
         # linksNames = [l.name for l in self.links]
         # log([j.name for j in self.junctions if (not j.isTank and j.connected)])
-        logger.debug("....Construction A21")
         for j in self.junctions.values():
             # try:
             if not self.isUpTank(j) and j.connected:
-                log(j.name)
-                for l in self.connected_links(j.name):
+                for link in self.connected_links(j.name):
                     row.append(jID)
-                    col.append(l.id)
-                    if l.n1 == j.name:
+                    col.append(link.id)
+                    if link.n1 == j.name:
                         val.append(-1)
                     else:
                         val.append(1)
@@ -147,6 +128,8 @@ class Secteur(object):
             #     # TODO : à traiter autrement
             #     dQ.append(j.conso + j.flow)
 
+        self.dQ = np.array(dQ)
+
         self.A21 = coo_matrix(
             (val, (row, col)),
             shape=(
@@ -156,39 +139,27 @@ class Secteur(object):
             dtype=np.int16,
         )
 
-        logger.debug("....Assemblage A11 & A21")
+    def _build_a_matrix(self, params):
+        self._build_a11(params)
+        self._build_a21(params)
         A1 = hstack((self.A11, self.A21.transpose()))
         A2 = hstack((self.A21, coo_matrix((self.A21.shape[0], self.A21.shape[0]))))
         A = vstack((A1, A2)).tocsc()
-        # log(np.round(A.todense(),3))
+        return A
 
-        logger.debug("....Construction dQ & dE")
+    def _build_b_matrix(self, params):
+        temp = float(params["temperature"])
         # Remplissage de -dE
-        dE = np.array([l.dE(temp) for l in self.links.values()])
-        log("dE", dE)
-        error = dE.sum()
+        dE = np.array([link.dE(temp) for link in self.links.values()])
 
         # Remplissage de -dQ
-        pipeFlow = np.array([l.flow for l in self.links.values()]).transpose()
-        log("Q", pipeFlow)
-        log("dQ", np.array(dQ))
-        log("A21", self.A21.todense())
-        dQ = np.array(dQ) - self.A21 * pipeFlow
-        log("B2", dQ)
-        error += dQ.sum()
-        log("error", error)
+        pipeFlow = np.array([link.flow for link in self.links.values()]).transpose()
+        dQ = self.dQ - self.A21 * pipeFlow
 
         B = np.concatenate([dE, dQ]).transpose()
+        return B
 
-        logger.debug("start resolution")
-        A.astype(np.float32)
-        B.astype(np.float32)
-        # log(A.getnnz())
-
-        # B.astype(np.dtype("float32"))
-        X = spsolve(A, B)
-
-        logger.debug("....Updating values")
+    def _update_network(self, X):
         # Mise à jour du réseau
         # TODO : extraire les pressions et debits pour
         # permettre une de travailler sur les matrices
@@ -215,13 +186,23 @@ class Secteur(object):
                     # Il ne faut donc pas prendre en compte son débit.
                     pass
             self.junctions[n].conso = t.conso
-            # logger.debug('Réservoir %s mis à jour. Débit : %0.2f'%(t.name,t.flow))
+
+    def compute(self, params):
+
+        A = self._build_a_matrix(params)
+        B = self._build_b_matrix(params)
+
+        A.astype(np.float32)
+        B.astype(np.float32)
+        error = B.sum()
+
+        X = spsolve(A, B)
+
+        self._update_network(X)
 
         return error
 
-    @timeit
     def solve(self, params):
-        logger.debug("Equilibrage du secteur %s" % (self.id))
         self._update()
         error = 1
         err_prec = 10
@@ -230,13 +211,11 @@ class Secteur(object):
             error = self.compute(params)
             # assert np.isnan(error), "Non convergé"
             if np.isnan(error):
-                logger.error("NON CONVERGE !!!")
                 return 666
 
         msg = "Secteur %s équilibré.\n" % (self.id)
         for t in self.upTanks.values():
             msg += "\t\t\tRéservoir %s mis à jour. Débit : %0.2e\n" % (t.name, t.conso)
-        logger.debug(msg)
         return 0
 
     @property
@@ -259,7 +238,6 @@ class Secteur(object):
             "features": [o for o in self.obj2export],
         }
 
-    @timeit
     def export_geojson(self, file, obj):
 
         if isinstance(obj, dict):
