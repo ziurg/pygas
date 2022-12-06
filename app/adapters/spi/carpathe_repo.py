@@ -77,6 +77,7 @@ class CarpatheRepository(NetworkRepository):
             node.params["setpoint"] = float(sline[12])
             node.params["design_flow"] = float(sline[14])
             node.params["design_pressure"] = float(sline[15])
+            node.is_tank = True
         elif cat.upper() == "R":  # Valve
             node.params["status"] = int(sline[5])
             node.params["name"] = sline[6]
@@ -85,10 +86,11 @@ class CarpatheRepository(NetworkRepository):
             node.params["name"] = sline[6]
             node.params["customer_id"] = sline[7]
             node.params["unloading_sensitivity"] = int(sline[8])
-            node.params["conso_risk_2%"] = float(sline[9])
-            node.params["conso_risk_50%"] = float(sline[10])
+            node.params["conso_risk_2pct"] = float(sline[9])
+            node.params["conso_risk_50pct"] = float(sline[10])
             node.params["pressure"] = float(sline[12])
             node.params["usage"] = sline[14]
+            node.is_customer = True
         return node
 
     def _parse_link(self, line: str) -> Link:
@@ -116,8 +118,8 @@ class CarpatheRepository(NetworkRepository):
             "function",
             "headloss_formula",
             "status",
-            "2%_consumption",
-            "50%_consumption",
+            "2pct_consumption",
+            "50pct_consumption",
             "threshold_consumption",
         ]
         params = {k: v for k, v in zip(keys, values)}
@@ -143,8 +145,8 @@ class CarpatheRepository(NetworkRepository):
                 "13": "heat_of_combustion",  # Pouvoir calorifique supérieur [kWh/m3]
                 "14": "gas_temperature",  # Température du gaz [°C]
                 "15": "pressure_drop",  # Delta pression [bar]
-                "16": "2%_temperature",  # Température du risque 2%
-                "17": "50%_temperature",  # Température du risque 50%
+                "16": "2pct_temperature",  # Température du risque 2%
+                "17": "50pct_temperature",  # Température du risque 50%
                 "18": "threshold_temperature",  # Température du seuil de chauffage
                 "19": "summer_temperature",  # Température été
                 "20": "nb_degree_day",  # Nombre de degrés-jours annuel
