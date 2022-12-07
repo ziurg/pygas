@@ -5,6 +5,9 @@ from app.domain.model.network import Network, Node, Link
 class CarpatheRepository(NetworkRepository):
     """Carpathe interface"""
 
+    def __init__(self):
+        self.network = None
+
     def load(self, model: Network, rootname: str) -> Network:
         """Read files in Carpathe format
         - Chercher les fichiers .noe et .can contenant le nom
@@ -20,13 +23,13 @@ class CarpatheRepository(NetworkRepository):
         Returns:
             FEM: Finite Element Model
         """
-        network = model
-        network = self._load_noe(network, rootname + ".noe")
-        network = self._load_can(network, rootname + ".can")
+        self.network = model
+        self._load_noe(rootname + ".noe")
+        self._load_can(rootname + ".can")
         self._sanity_check()
-        return network
+        return self.network
 
-    def write(self, model: Network, rootname: str) -> None:
+    def write(self, rootname: str) -> None:
         """Generate network files in Carpathe format
 
         Parameters
@@ -36,10 +39,10 @@ class CarpatheRepository(NetworkRepository):
         rootname : str
             name used for .noe and .can files.
         """
-        self._write_noe(model, rootname + ".noe")
-        self._write_can(model, rootname + ".can")
-        self._write_rnoe(model, rootname + ".rnoe")
-        self._write_rcan(model, rootname + ".rcan")
+        self._write_noe(rootname + ".noe")
+        self._write_can(rootname + ".can")
+        self._write_rnoe(rootname + ".rnoe")
+        self._write_rcan(rootname + ".rcan")
 
     def _sanity_check(self):
         # TODO :
@@ -91,6 +94,8 @@ class CarpatheRepository(NetworkRepository):
             node.params["pressure"] = float(sline[12])
             node.params["usage"] = sline[14]
             node.is_customer = True
+            #
+            node.params["flow"] = node.params["conso_risk_2pct"]
         return node
 
     def _parse_link(self, line: str) -> Link:
@@ -123,9 +128,14 @@ class CarpatheRepository(NetworkRepository):
             "threshold_consumption",
         ]
         params = {k: v for k, v in zip(keys, values)}
-        return Link(**params)
+        link = Link(**params)
+        # Replace node id by Node instance
+        link.n1 = self.network.nodes[int(link.n1)]
+        link.n2 = self.network.nodes[int(link.n2)]
 
-    def _load_noe(self, model: Network, file: str) -> Network:
+        return link
+
+    def _load_noe(self, file: str) -> None:
         with open(file, "r") as f:
             # Ignoring empty lines and deleting \n
             lines = (line.strip() for line in f if line.strip())
@@ -154,7 +164,7 @@ class CarpatheRepository(NetworkRepository):
             for i, line in enumerate(lines):
                 try:
                     paramName = noeParamsLoc[str(i + 1)]
-                    model.params[paramName] = float(line)
+                    self.network.params[paramName] = float(line)
                 except KeyError:  # Not relevant parameter
                     pass
                 if i == 19:
@@ -168,13 +178,11 @@ class CarpatheRepository(NetworkRepository):
                 try:
                     node = self._parse_node(line)
                     node.params["sector"] = sector
-                    model.add(node)
+                    self.network.add(node)
                 except (ValueError, IndexError):
                     sector = line
 
-        return model
-
-    def _load_can(self, model: Network, file: str) -> Network:
+    def _load_can(self, file: str) -> None:
         with open(file, "r") as f:
             # Ignoring empty lines and deleting \n
             lines = (line.strip() for line in f if line.strip())
@@ -194,20 +202,18 @@ class CarpatheRepository(NetworkRepository):
                 try:
                     link = self._parse_link(line)
                     link.params["sector"] = sector
-                    model.add(link)
+                    self.network.add(link)
                 except (TypeError):
                     sector = line
 
-        return model
-
-    def _write_noe(self, model: Network, rootname: str) -> None:
+    def _write_noe(self, rootname: str) -> None:
         pass
 
-    def _write_can(self, model: Network, rootname: str) -> None:
+    def _write_can(self, rootname: str) -> None:
         pass
 
-    def _write_rnoe(self, model: Network, rootname: str) -> None:
+    def _write_rnoe(self, rootname: str) -> None:
         pass
 
-    def _write_rcan(self, model: Network, rootname: str) -> None:
+    def _write_rcan(self, rootname: str) -> None:
         pass

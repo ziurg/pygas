@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Dict, Union
+from typing import TYPE_CHECKING, Optional, Dict, Union, Generator
 from functools import singledispatchmethod
 
 if TYPE_CHECKING:
@@ -48,13 +48,42 @@ class Network:
     def _(self, e: Link) -> bool:
         return e.id in self.links
 
+    @property
+    def nb_nodes(self):
+        return len(self.nodes)
+
+    @property
+    def nb_links(self):
+        return len(self.links)
+
+    @property
+    def nb_tanks(self):
+        return len([node for node in self.nodes.values() if not node.is_tank])
+
+    def connected_links(self, node: Node) -> Generator[Link, None, None]:
+        """Get all links connected to the given node.
+
+        Parameters
+        ----------
+        node : Node
+            node instance
+
+        Yields
+        ------
+        Generator[Link, None, None]
+            Link instances connected to the node
+        """
+        for link in self.links.values():
+            if node in link:
+                yield link
+
     def load(self, interface: "NetworkRepository", file: str):
         return interface.load(self, file)
 
     def write(self, interface: "NetworkRepository", file: str):
         return interface.write(self, file)
 
-    def balance(self):
+    def solve(self):
         solver = Solver(self)
         solver.run()
         # TODO

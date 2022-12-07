@@ -103,3 +103,45 @@ def test_network_contain_edge():
         e = Link(id, id, id * 100)
         net.add(e)
         assert e in net
+
+
+def test_node_in_link():
+    net = Network()
+
+    node1 = Node(id=1)
+    node2 = Node(id=2)
+    node3 = Node(id=3)
+    edge1 = Link(id=1, n1=node1, n2=node2)
+    edge2 = Link(id=2, n1=node2, n2=node3)
+
+    net.add(node1)
+    net.add(node2)
+    net.add(node3)
+    net.add(edge1)
+    net.add(edge2)
+
+    assert node1 in edge1
+    assert 1 in edge1
+
+
+def test_connected_links():
+    net = Network()
+
+    node1 = Node(id=1)
+    node2 = Node(id=2)
+    node3 = Node(id=3)
+    edge1 = Link(id=12, n1=node1, n2=node2)
+    edge2 = Link(id=23, n1=node2, n2=node3)
+
+    net.add(node1)
+    net.add(node2)
+    net.add(node3)
+    net.add(edge1)
+    net.add(edge2)
+
+    node1_links = [link.id for link in net.connected_links(node1)]
+    node2_links = [link.id for link in net.connected_links(node2)]
+    node3_links = [link.id for link in net.connected_links(node3)]
+    assert sorted(node1_links) == [12]
+    assert sorted(node2_links) == [12, 23]
+    assert sorted(node3_links) == [23]

@@ -1,5 +1,4 @@
 import numpy as np
-from typing import TYPE_CHECKING, Dict
 from scipy.sparse import coo_matrix, spdiags, hstack, vstack
 from scipy.sparse.linalg import spsolve
 
@@ -24,12 +23,12 @@ class Solver:
 
     def _build_a11(self):
         params = {**self.__dict__, **self.params}
-        a11 = np.array([link.coeff(params) for link in self.net.links.values()])
+        a11 = np.array([link.coeff(**params) for link in self.net.links.values()])
         self.A11 = spdiags(a11, 0, a11.size, a11.size)
 
     def _build_a21(self):
-        nb_rows = len(self.net.nb_nodes) - int(self.nb_tanks)
-        nb_columns = int(self.nb_links)
+        nb_rows = self.net.nb_nodes - self.net.nb_tanks
+        nb_columns = self.net.nb_links
 
         # Matrice A21
         #  et récupération du débit aux jonctions pour la matrice dQ

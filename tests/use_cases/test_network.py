@@ -1,22 +1,17 @@
-from app.domain.model.network import Network, Node, Link
+from app.domain.model.network import Network
+from app.adapters.spi.carpathe_repo import CarpatheRepository
 
 
-def test_add_node_to_network():
-    # Given an empty network
+def test_balance_basic_network():
+    # Given a network defined in Carpathe format
     net = Network()
-    # When we add a node by his id
-    net.add(Node(id=12))
-    # Then the node is included in the network's nodes list
+    rootname = "pygas/tests/data/example"
+    interface = CarpatheRepository()
+    net.load(interface, rootname)
+    # When we ask to balance network
+    net.solve()
+    # Then we get correct pressures and flows
     assert 12 in net.nodes
-
-
-def test_add_edge_to_network():
-    net = Network()
-    net.add(Link(id=25, n1=12, n2=35))
-
-    assert 25 in net.links
-    assert net.links[25].n1 == 12
-    assert net.links[25].n2 == 35
 
 
 # Construire un réseau depuis un fichier json

@@ -28,6 +28,7 @@ class Node:
     def __init__(self, id, **kwargs):
         self.id = id
         self.pressure = 0.0
+        self.flow = 0.0
         self.is_tank = False
         self.is_customer = False
         self.params = {}
