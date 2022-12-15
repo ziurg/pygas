@@ -29,8 +29,8 @@ class Node:
         self.id = id
         self.pressure = 0.0
         self.flow = 0.0
-        self.is_tank = False
-        self.is_customer = False
+        self.fixed_pressure = None
+        self.fixed_flow = None
         self.params = {}
         for k, v in kwargs.items():
             try:
@@ -39,7 +39,30 @@ class Node:
                 self.params[k] = v
 
     def __getattr__(self, attribute):
-        return self.params[attribute]
+        try:
+            return self.params[attribute]
+        except KeyError:
+            return self.__dict__[attribute]
+
+    def __setattr__(self, attr_name, attr_value):
+        try:
+            self.__dict__[attr_name] = attr_value
+        except KeyError:
+            self.params[attr_name] = attr_value
 
     def __eq__(self, other: int):
         return self.id == other
+
+    @property
+    def is_tank(self):
+        if not (self.fixed_pressure is None):
+            return True
+        else:
+            return False
+
+    @property
+    def is_customer(self):
+        if not self.fixed_flow is None:
+            return True
+        else:
+            return False

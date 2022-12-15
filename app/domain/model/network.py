@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Dict, Union, Generator
+from typing import TYPE_CHECKING, Optional, Dict, List, Union, Generator
 from functools import singledispatchmethod
 
 if TYPE_CHECKING:
@@ -48,6 +48,11 @@ class Network:
     def _(self, e: Link) -> bool:
         return e.id in self.links
 
+    def add_nodes(self, nodes: List[int]) -> None:
+        for node_id in nodes:
+            if not node_id in self.nodes:
+                self.nodes[node_id] = Node(node_id)
+
     @property
     def nb_nodes(self):
         return len(self.nodes)
@@ -58,7 +63,7 @@ class Network:
 
     @property
     def nb_tanks(self):
-        return len([node for node in self.nodes.values() if not node.is_tank])
+        return len([node for node in self.nodes.values() if node.is_tank])
 
     def connected_links(self, node: Node) -> Generator[Link, None, None]:
         """Get all links connected to the given node.
@@ -86,11 +91,6 @@ class Network:
     def solve(self):
         solver = Solver(self)
         solver.run()
-        # TODO
-        # Vérifier si les mathodes ci-dessous sont nécessaires
-        # ou si les valeurs sont mises à jour directement.
-        self.nodes = solver.get_nodes_results()
-        self.nodes = solver.get_links_results()
 
 
 class ComplexNetwork(Network):

@@ -1,18 +1,48 @@
 from app.domain.model.network import Network
+from app.domain.model.solver import Solver
 from app.adapters.spi.carpathe_repo import CarpatheRepository
 
 
+def test_create_basic_network(basic_network):
+    net = basic_network
+
+    assert 47 in net.nodes
+    assert net.nodes[49].is_tank == True
+    assert net.links[60].length == 50
+    assert net.nb_tanks == 1
+    assert net.nb_nodes == 6
+    assert net.nb_links == 6
+
+
+def test_create_a11_matrix(basic_network):
+    net = basic_network
+    solver = Solver(net)
+    solver._build_a11()
+    assert False  # L'initialisation des pressions et débits ne fonctionne pas
+
+
 def test_balance_basic_network():
-    # Given a network defined in Carpathe format
+    # Given a basic network (only pipes and junctions)
     net = Network()
     rootname = "pygas/tests/data/example"
     interface = CarpatheRepository()
     net.load(interface, rootname)
     # When we ask to balance network
-    net.solve()
+    # net.solve()
     # Then we get correct pressures and flows
-    assert 12 in net.nodes
+    # assert False  # TODO
 
+
+# def test_balance_complex_network():
+# # Given a complex network (with valves, sub-networks, ...)
+# net = Network()
+# rootname = "pygas/tests/data/complex_example"
+# interface = CarpatheRepository()
+# net.load(interface, rootname)
+# # When we ask to balance network
+# net.solve()
+# # Then we get correct pressures and flows
+# assert False  # TODO
 
 # Construire un réseau depuis un fichier json
 

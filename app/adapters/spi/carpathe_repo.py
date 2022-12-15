@@ -80,7 +80,7 @@ class CarpatheRepository(NetworkRepository):
             node.params["setpoint"] = float(sline[12])
             node.params["design_flow"] = float(sline[14])
             node.params["design_pressure"] = float(sline[15])
-            node.is_tank = True
+            node.fixed_pressure = float(sline[12])
         elif cat.upper() == "R":  # Valve
             node.params["status"] = int(sline[5])
             node.params["name"] = sline[6]
@@ -93,7 +93,7 @@ class CarpatheRepository(NetworkRepository):
             node.params["conso_risk_50pct"] = float(sline[10])
             node.params["pressure"] = float(sline[12])
             node.params["usage"] = sline[14]
-            node.is_customer = True
+            node.fixed_flow = float(sline[12])
             #
             node.params["flow"] = node.params["conso_risk_2pct"]
         return node

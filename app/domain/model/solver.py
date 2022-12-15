@@ -5,7 +5,7 @@ from scipy.sparse.linalg import spsolve
 
 class Solver:
     def __init__(self, net, **kwargs):
-        self.net = net
+        self.net = net  # ? .copy()
         self.precision = 1e-4
         self.temperature = 25.0
         self.headloss_coeff = 1.82
@@ -21,9 +21,16 @@ class Solver:
     def __getattr__(self, attribute):
         return self.params[attribute]
 
+    def _init_values(self):
+        for node in self.net.nodes.values():
+            node.pressure = 0.001
+        for link in self.net.links.values():
+            link.flow = 0.001
+
     def _build_a11(self):
         params = {**self.__dict__, **self.params}
         a11 = np.array([link.coeff(**params) for link in self.net.links.values()])
+        print(self.net.nodes[47].pressure)
         self.A11 = spdiags(a11, 0, a11.size, a11.size)
 
     def _build_a21(self):
@@ -102,6 +109,7 @@ class Solver:
 
     def solve(self):
 
+        self._init_values()
         A = self._build_a_matrix()
         B = self._build_b_matrix()
 
