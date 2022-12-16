@@ -9,17 +9,26 @@ def test_create_basic_network(basic_network):
     assert 47 in net.nodes
     assert net.nodes[49].is_tank == True
     assert net.links[60].length == 50
-    assert net.nb_tanks == 1
+    assert net.nb_tanks == 2
     assert net.nb_nodes == 6
     assert net.nb_links == 6
 
 
 def test_create_a11_matrix(basic_network):
     net = basic_network
-    solver = Solver(net)
-    solver._build_a11()
-    assert False  # L'initialisation des pressions et débits ne fonctionne pas
-
+    net.solve()
+    # assert net.nodes[47].flow == 4
+    # assert net.nodes[49].flow == 4
+    assert net.nodes[51].pressure == 4
+    assert net.nodes[53].pressure == 4
+    assert net.nodes[56].pressure == 4
+    assert net.nodes[59].pressure == 4
+    assert net.links[55].flow == 4
+    assert net.links[57].flow == 4
+    assert net.links[60].flow == 4
+    assert net.links[58].flow == 4
+    assert net.links[54].flow == 4
+    assert net.links[52].flow == 4
 
 def test_balance_basic_network():
     # Given a basic network (only pipes and junctions)

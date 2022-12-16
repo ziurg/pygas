@@ -6,6 +6,7 @@ from scipy.sparse.linalg import spsolve
 class Solver:
     def __init__(self, net, **kwargs):
         self.net = net  # ? .copy()
+        self.p0 = 1.013e-3
         self.precision = 1e-4
         self.temperature = 25.0
         self.headloss_coeff = 1.82
@@ -22,15 +23,19 @@ class Solver:
         return self.params[attribute]
 
     def _init_values(self):
+        """
+        Initialize values to non zeros,
+        and add index to links
+        """
         for node in self.net.nodes.values():
             node.pressure = 0.001
-        for link in self.net.links.values():
+        for i, link in enumerate(self.net.links.values()):
             link.flow = 0.001
+            link.index = i
 
     def _build_a11(self):
         params = {**self.__dict__, **self.params}
         a11 = np.array([link.coeff(**params) for link in self.net.links.values()])
-        print(self.net.nodes[47].pressure)
         self.A11 = spdiags(a11, 0, a11.size, a11.size)
 
     def _build_a21(self):
@@ -48,7 +53,7 @@ class Solver:
         for node_row, node in enumerate(nodes):
             for link in self.net.connected_links(node):
                 row.append(node_row)
-                col.append(link.id)
+                col.append(link.index)
                 if link.n1 == node:
                     val.append(-1)
                 else:
@@ -78,10 +83,10 @@ class Solver:
     def _build_b_matrix(self):
         params = {**self.__dict__, **self.params}
         # Remplissage de -dE
-        dE = np.array([link.dE(params) for link in self.links.values()])
+        dE = np.array([link.dE(**params) for link in self.net.links.values()])
 
         # Remplissage de -dQ
-        pipeFlow = np.array([link.flow for link in self.links.values()]).transpose()
+        pipeFlow = np.array([link.flow for link in self.net.links.values()]).transpose()
         dQ = self.dQ - self.A21 * pipeFlow
 
         B = np.concatenate([dE, dQ]).transpose()

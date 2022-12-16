@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from .node import Node
 from functools import singledispatchmethod
-
+import numpy as np
 
 @dataclass
 class Link:
@@ -108,11 +108,13 @@ class Link:
         n = params["headloss_coeff"]
         val = n * self._res(**params) * abs(self.flow) ** (n - 1)
         return val
-
-    def _link_coef(self, link):
-        n = self.headloss_coeff
-        kelvin_temp = self.temperature + 273.15
-        density = self.gas_density
-        res = link.length * link.kc * link.diameter**-4.82 * density * kelvin_temp
-        coeff = n * res * abs(link.flow) ** (n - 1)
-        return coeff
+        
+    def dE(self, **params) -> float:
+        n = params["headloss_coeff"]
+        p0 = params["p0"]
+        val = np.sign(self.flow) * self._res(**params) * abs(self.flow) ** n
+        if self.get_pressure() > 2:
+            val += (self.n2.pressure + p0) ** 2 - (self.n1.pressure + p0) ** 2
+        else:
+            val += self.n2.pressure - self.n1.pressure
+        return -val
