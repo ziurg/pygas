@@ -1,3 +1,7 @@
 click
 pydantic
 geojson
+numpy
+scipy
+matplotlib
+pandas
