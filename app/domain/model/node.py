@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class Node:
     def __init__(self, id, **kwargs):
         self.id = id
@@ -14,7 +15,7 @@ class Node:
     @property
     def fixed_pressure(self):
         return self._fixed_pressure
-        
+
     @fixed_pressure.setter
     def fixed_pressure(self, value):
         if self._fixed_flow is None:
@@ -23,11 +24,10 @@ class Node:
         else:
             raise Exception("Can't get node with both fixed pressure and flow.")
 
-
     @property
     def pressure(self):
         return self._pressure
-        
+
     @pressure.setter
     def pressure(self, value):
         if self._fixed_pressure is None:
@@ -36,7 +36,7 @@ class Node:
     @property
     def fixed_flow(self):
         return self._fixed_flow
-        
+
     @fixed_flow.setter
     def fixed_flow(self, value):
         if self._fixed_pressure is None:
@@ -48,7 +48,7 @@ class Node:
     @property
     def flow(self):
         return self._flow
-        
+
     @flow.setter
     def flow(self, value):
         if self._fixed_flow is None:
@@ -70,7 +70,7 @@ class Node:
                 self.params[attr_name] = attr_value
 
     def __str__(self):
-        return f'Node {self.id} (Q={self.flow:.2f}; P={self.pressure:.2f})'
+        return f"Node {self.id} (Q={self.flow:.2f}; P={self.pressure:.2f})"
 
     def __eq__(self, other: int):
         return self.id == other
@@ -84,7 +84,7 @@ class Node:
 
     @property
     def is_customer(self):
-        if not self.fixed_flow is None:
+        if not (self.fixed_flow is None):
             return True
         else:
             return False

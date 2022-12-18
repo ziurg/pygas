@@ -50,7 +50,7 @@ class Network:
 
     def add_nodes(self, nodes: List[int]) -> None:
         for node_id in nodes:
-            if not node_id in self.nodes:
+            if not (node_id in self.nodes):
                 self.nodes[node_id] = Node(node_id)
 
     @property

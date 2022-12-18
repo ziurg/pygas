@@ -3,6 +3,7 @@ from .node import Node
 from functools import singledispatchmethod
 import numpy as np
 
+
 @dataclass
 class Link:
     """Link object
@@ -108,7 +109,7 @@ class Link:
         n = params["headloss_coeff"]
         val = n * self._res(**params) * abs(self.flow) ** (n - 1)
         return val
-        
+
     def dE(self, **params) -> float:
         n = params["headloss_coeff"]
         p0 = params["p0"]
