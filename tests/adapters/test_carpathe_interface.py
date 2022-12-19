@@ -5,7 +5,7 @@ from app.domain.model.network import Network
 def test_carpathe_load():
     # Given an empty Network and Carpathe files (.noe and .can)
     model = Network()
-    rootname = "pygas/tests/data/example"
+    rootname = "./tests/data/example"
     # When files are loaded
     interface = CarpatheRepository()
     model.load(interface, rootname)
