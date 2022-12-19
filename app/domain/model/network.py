@@ -5,6 +5,7 @@ from functools import singledispatchmethod
 
 if TYPE_CHECKING:
     from app.domain.repository import NetworkRepository
+    from app.domain.ports.viewer import ViewerInterface
 
 # from pygas.domain.model.node import Node
 from .node import Node
@@ -91,6 +92,9 @@ class Network:
     def solve(self):
         solver = Solver(self)
         solver.run()
+
+    def show(self, interface: "ViewerInterface"):
+        interface.show(self)
 
 
 class ComplexNetwork(Network):

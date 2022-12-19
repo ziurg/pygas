@@ -13,7 +13,7 @@ setup(
         "Programming Language :: Python :: 3.8",
     ],
     packages=find_packages(exclude=["docs", "tests*"]),
-    install_requires=["click", "numpy", "scipy", "matplotlib", "pandas"],
+    install_requires=["click", "numpy", "scipy", "matplotlib", "pandas", "pyvis"],
     extras_require={
         "test": ["coverage", "pytest", "pytest-cov"],
     },
