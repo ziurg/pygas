@@ -17,17 +17,16 @@ def test_solve_basic_network(basic_network):
     net.solve()
     # assert net.nodes[47].flow == 4
     # assert net.nodes[49].flow == 4
-    assert net.nodes[51].pressure == 0.02199957099794671
-    assert net.nodes[53].pressure == 0.021999697885686825
-    assert net.nodes[56].pressure == 0.021999069489905824
-    assert net.nodes[59].pressure == 0.021998854341746626
-    assert abs(net.links[55].flow) == 150.45095096289322
-    assert abs(net.links[57].flow) == 125.17562012434828
-    assert abs(net.links[60].flow) == 300.0
-    assert abs(net.links[58].flow) == 174.82437987565177
-    assert abs(net.links[54].flow) == 25.275330838544946
-    assert abs(net.links[52].flow) == 149.54904903710684
-
+    assert round(net.nodes[51].pressure, 4) == 0.022
+    assert round(net.nodes[53].pressure, 4) == 0.022
+    assert round(net.nodes[56].pressure, 4) == 0.022
+    assert round(net.nodes[59].pressure, 4) == 0.022
+    assert round(abs(net.links[55].flow), 4) == 150.4510
+    assert round(abs(net.links[57].flow), 4) == 125.1756
+    assert round(abs(net.links[60].flow), 4) == 300.0
+    assert round(abs(net.links[58].flow), 4) == 174.8244
+    assert round(abs(net.links[54].flow), 4) == 25.2753
+    assert round(abs(net.links[52].flow), 4) == 149.5490
 
 def test_balance_basic_network():
     # Given a basic network (only pipes and junctions)
