@@ -8,23 +8,35 @@ class VisNetwork(PyVisNet):
     nbLinks = 0
 
     def __init__(self, net: Network):
-        super().__init__()
+        super().__init__(directed=True)
         self.load(net)
 
     def load(self, net: Network):
         for node in net.nodes.values():
             id = node.id
+            press = node.pressure
+            flow = node.flow
             if node.is_tank:
-                self.add_node(id, label=str(id), title="T", pressure=node.pressure)
+                self.add_node(id, label=str(id), title="T", pressure=press, flow=flow)
             elif node.is_customer:
-                self.add_node(id, label=str(id), title="G", flow=node.flow)
+                self.add_node(id, label=str(id), title="G", pressure=press, flow=flow)
             else:
-                self.add_node(id, label=str(id))
+                self.add_node(id, label=str(id), pressure=press, flow=flow)
         for link in net.links.values():
             id = link.id
             n1 = link.n1.id
             n2 = link.n2.id
-            self.add_edge(id, n1, n2, longueur=link.length, diametre=link.diameter)
+            press = link.pressure
+            flow = link.flow
+            self.add_edge(
+                id,
+                n1,
+                n2,
+                length=link.length,
+                diameter=link.diameter,
+                pressure=press,
+                flow=flow,
+            )
 
     def get_edge(self, label):
         return [e for e in self.get_edges() if str(e["label"]) == str(label)][0]
@@ -46,28 +58,19 @@ class VisNetwork(PyVisNet):
                 kwargs["color"] = "#E53E18"
                 kwargs["size"] = 9
                 kwargs["shape"] = "triangle"
-                kwargs["flow"] = 0.0
             elif title.upper() == "B":
                 kwargs["color"] = "green"
                 kwargs["size"] = 9
                 kwargs["shape"] = "triangle"
-                kwargs["pressure"] = 0.001
             elif title.upper() == "G":
                 kwargs["color"] = "#5188C2"
                 kwargs["size"] = 5
-                kwargs["pressure"] = 0.001
             else:
                 raise KeyError
         except KeyError:
             kwargs["title"] = "0"
             kwargs["color"] = "#000000"
             kwargs["size"] = 1
-            kwargs["pressure"] = 0.001
-
-        try:
-            _ = kwargs["flow"]
-        except KeyError:
-            kwargs["flow"] = 0.0
 
         kwargs["num"] = len(self.get_nodes()) + 1
         super().add_node(*args, **kwargs)
@@ -77,7 +80,6 @@ class VisNetwork(PyVisNet):
             kwargs["label"] = str(args[0])
             args = args[1:]
         kwargs["color"] = "gray"
-        kwargs["flow"] = 0.01
         self.nbLinks += 1
         kwargs["num"] = self.nbLinks
         super().add_edge(*args, **kwargs)

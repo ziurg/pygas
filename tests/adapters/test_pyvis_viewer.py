@@ -11,4 +11,5 @@ def test_pyvis_init(basic_network):
 def test_basic_network_show(basic_network):
     net = basic_network
     viewer = PyvisWiewer()
+    net.solve()
     net.show(viewer)
