@@ -1,6 +1,6 @@
 from app.domain.repository import NetworkRepository
 from app.domain.model.network import Network, Node, Link
-
+from pathlib import Path
 
 class CarpatheRepository(NetworkRepository):
     """Carpathe interface"""
@@ -24,8 +24,8 @@ class CarpatheRepository(NetworkRepository):
             FEM: Finite Element Model
         """
         self.network = model
-        self._load_noe(rootname + ".noe")
-        self._load_can(rootname + ".can")
+        self._load_noe(Path(rootname + ".noe"))
+        self._load_can(Path(rootname + ".can"))
         self._sanity_check()
         return self.network
 

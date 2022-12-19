@@ -1,7 +1,6 @@
 from app.domain.model.network import Network
 from app.adapters.spi.carpathe_repo import CarpatheRepository
 
-
 def test_create_basic_network(basic_network):
     net = basic_network
 
@@ -33,7 +32,7 @@ def test_solve_basic_network(basic_network):
 def test_balance_basic_network():
     # Given a basic network (only pipes and junctions)
     net = Network()
-    rootname = "./tests/data/example"
+    rootname = "pygas/tests/data/example"
     interface = CarpatheRepository()
     net.load(interface, rootname)
     # When we ask to balance network
