@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from .node import Node
 from functools import singledispatchmethod
-import numpy as np
 
 
 @dataclass
