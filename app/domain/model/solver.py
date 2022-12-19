@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.sparse import coo_matrix, spdiags, hstack, vstack
 from scipy.sparse.linalg import spsolve
+from app.domain.model.link import Link
 
 
 class Solver:
@@ -33,9 +34,50 @@ class Solver:
             link.flow = 0.001
             link.index = i
 
+    def _link_kc(self, link: Link):
+        if link.pressure > 2:
+            return 156720 * 10**-6
+        else:
+            return 75927 * 10**-6
+
+    def _link_res(self, link: Link):
+        kelvin_temp = float(self.temperature) + 273.15
+        density = float(self.gas_density)
+        length = float(link.length)
+        diameter = float(link.diameter)
+        kc = self._link_kc(link)
+        return length * kc * diameter**-4.82 * density * kelvin_temp
+
+    def _link_coeff(self, link: Link) -> float:
+        """A11 matrix coefficient used for Hardy Cross method"""
+        n = self.headloss_coeff
+        val = n * self._link_res(link) * abs(link.flow) ** (n - 1)
+        return val
+
+    def _link_dE(self, link: Link) -> float:
+        """Headloss correction for Hardy Cross method
+
+        Parameters
+        ----------
+        link : Link
+            Link instance used to compute correction
+
+        Returns
+        -------
+        float
+            correction value used in matrix dE
+        """
+        n = self.headloss_coeff
+        p0 = self.p0
+        val = np.sign(link.flow) * self._link_res(link) * abs(link.flow) ** n
+        if link.pressure > 2:
+            val += (link.n2.pressure + p0) ** 2 - (link.n1.pressure + p0) ** 2
+        else:
+            val += link.n2.pressure - link.n1.pressure
+        return -val
+
     def _build_a11(self):
-        params = {**self.__dict__, **self.params}
-        a11 = np.array([link.coeff(**params) for link in self.net.links.values()])
+        a11 = np.array([self._link_coeff(link) for link in self.net.links.values()])
         self.A11 = spdiags(a11, 0, a11.size, a11.size)
 
     def _build_a21(self):
@@ -81,9 +123,8 @@ class Solver:
         return A
 
     def _build_b_matrix(self):
-        params = {**self.__dict__, **self.params}
         # Remplissage de -dE
-        dE = np.array([link.dE(**params) for link in self.net.links.values()])
+        dE = np.array([self._link_dE(link) for link in self.net.links.values()])
 
         # Remplissage de -dQ
         pipeFlow = np.array([link.flow for link in self.net.links.values()]).transpose()

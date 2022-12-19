@@ -87,35 +87,7 @@ class Link:
         else:
             return self.n2
 
-    def get_pressure(self):
+    @property
+    def pressure(self):
         avg_pressure = (self.n1.pressure + self.n2.pressure) / 2.0
         return avg_pressure
-
-    def _kc(self):
-        if self.get_pressure() > 2:
-            return 156720 * 10**-6
-        else:
-            return 75927 * 10**-6
-
-    def _res(self, **params):
-        kelvin_temp = float(params["temperature"]) + 273.15
-        density = float(params["gas_density"])
-        length = float(self.length)
-        diameter = float(self.diameter)
-        return length * self._kc() * diameter**-4.82 * density * kelvin_temp
-
-    def coeff(self, **params) -> float:
-        """A11 matrix coefficient used for Hardy Cross method"""
-        n = params["headloss_coeff"]
-        val = n * self._res(**params) * abs(self.flow) ** (n - 1)
-        return val
-
-    def dE(self, **params) -> float:
-        n = params["headloss_coeff"]
-        p0 = params["p0"]
-        val = np.sign(self.flow) * self._res(**params) * abs(self.flow) ** n
-        if self.get_pressure() > 2:
-            val += (self.n2.pressure + p0) ** 2 - (self.n1.pressure + p0) ** 2
-        else:
-            val += self.n2.pressure - self.n1.pressure
-        return -val
